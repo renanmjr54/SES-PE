@@ -1,8 +1,8 @@
-/**************************************************************************************
- * RELATÓRIO DIÁRIO DE UPLOADS DE ORDEM BANCÁRIA (OB) NO GOOGLE DRIVE - SES - GPAG-FIN
- * Autor: Renan Martins da Silva - Secretaria de Saúde do Estado de Pernambuco - SES/PE
- * Função: Mostrar por dia quantos arquivos cada usuário enviou em cada pasta
- *************************************************************************************/
+/********************************************************************************************************************
+ * RELATÓRIO DIÁRIO DE UPLOADS DE ORDENS BANCÁRIAS (OB'S) NO GOOGLE DRIVE
+ * Autor: Renan Martins da Silva - Secretaria de Saúde do Estado de Pernambuco - SES - GPAG (TESOURO)
+ * Função: Criar uma planilha para mostrar quantos arquivos cada usuário inseriu na pasta do Google Drive diariamente
+ ********************************************************************************************************************/
 
 const FOLDER_ID = "link_da_pasta_de_pesquisa";
 const SHEET_NAME = "DADOS";
