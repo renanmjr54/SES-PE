@@ -1,0 +1,80 @@
+/**************************************************************************************
+ * RELATÓRIO DIÁRIO DE UPLOADS DE ORDEM BANCÁRIA (OB) NO GOOGLE DRIVE - SES - GPAG-FIN
+ * Autor: Renan Martins da Silva - Secretaria de Saúde do Estado de Pernambuco - SES/PE
+ * Função: Mostrar por dia quantos arquivos cada usuário enviou em cada pasta
+ *************************************************************************************/
+
+const FOLDER_ID = "link_da_pasta_de_pesquisa";
+const SHEET_NAME = "DADOS";
+
+function onOpen() {
+  const ui = SpreadsheetApp.getUi();
+  ui.createMenu("📁 DRIVE")
+    .addItem("ATUALIZAR DADOS", "atualizarDadosDrive")
+    .addToUi();
+}
+
+function atualizarDadosDrive() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName(SHEET_NAME);
+  if (!sheet) {
+    sheet = ss.insertSheet(SHEET_NAME);
+  }
+
+  const headers = ["DATA", "USUÁRIO", "OB'S", "PASTA"];
+  sheet.getRange("A1:D1").setValues([headers]).setFontWeight("bold");
+
+  sheet.getRange("A2:D" + sheet.getMaxRows()).clearContent();
+
+  const folder = DriveApp.getFolderById(FOLDER_ID);
+  const dados = [];
+  listarArquivos(folder, dados);
+
+  const resumo = agruparDados(dados);
+
+  if (resumo.length > 0) {
+    sheet.getRange(2, 1, resumo.length, resumo[0].length).setValues(resumo);
+  } else {
+    sheet.getRange(2,1,1,1).setValue("Nenhum arquivo encontrado");
+  }
+
+  ss.toast("✅ Dados atualizados com sucesso!");
+}
+
+function listarArquivos(pasta, dados) {
+  const arquivos = pasta.getFiles();
+  while (arquivos.hasNext()) {
+    const arquivo = arquivos.next();
+    const data = Utilities.formatDate(arquivo.getDateCreated(), Session.getScriptTimeZone(), "dd/MM/yyyy");
+
+    let usuario = "Desconhecido";
+    try {
+      const owner = arquivo.getOwner();
+      if (owner && owner.getEmail) usuario = owner.getEmail();
+    } catch (e) {
+    }
+
+    const nomePasta = pasta.getName();
+    dados.push([data, usuario, 1, nomePasta]);
+  }
+
+  const subpastas = pasta.getFolders();
+  while (subpastas.hasNext()) {
+    const sub = subpastas.next();
+    listarArquivos(sub, dados);
+  }
+}
+
+function agruparDados(dados) {
+  const mapa = {};
+  dados.forEach(([data, usuario, _, pasta]) => {
+    const chave = `${data}|${usuario}|${pasta}`;
+    if (!mapa[chave]) mapa[chave] = 0;
+    mapa[chave]++;
+  });
+
+  return Object.entries(mapa).map(([chave, qtd]) => {
+    const [data, usuario, pasta] = chave.split("|");
+    return [data, usuario, qtd, pasta];
+  });
+}
